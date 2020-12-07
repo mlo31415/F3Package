@@ -169,7 +169,8 @@ class F3Page:
         return True
 
     def IsPerson(self) -> bool:
-        return self._Tags is not None and ("Fan" in self._Tags or "Pro" in self._Tags)
+        return self._Tags is not None and ("Fan" in self._Tags or "Pro" in self._Tags) and \
+               ("Person" in self._Tags or "Publisher" not in self._Tags)    # "Publisher" is an organization, but if the page is marked Person, let it be
 
 
     @property
