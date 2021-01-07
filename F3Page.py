@@ -1,4 +1,4 @@
-# A file to define a class to hold the characteristics of a Fancy 3 page
+# A file to define a class to extract and hold the characteristics of a Fancy 3 page
 from __future__ import annotations
 from dataclasses import dataclass
 from typing import Optional, List, Union, Set, Any
@@ -132,7 +132,6 @@ class F3Page:
         self._DisplayTitle: Optional[str]=None                      # The title displayed for the page (takes DISPLAYTITLE into account if it has been set; otherwise is Name)
         self._Name: Optional[str]=None                              # The page's Mediawiki name (ignores DISPLAYTITLE, so if DISPLAYTITLE is absent is the same as DisplayTitle)  e.g., Now Is the Time
         self._Redirect: Optional[str]=None                          # If this is a redirect page, the Wikiname name of the page to which it redirects
-        self._UltimateRedirect: Optional[str]=None                  # If this is a redirect page, the non-canonical name of the ultimate page that this chain of redirects leads to
         self._Tags: TagSet=TagSet()                                 # A list of tags associated with this page. The case has been normalized
         self._Rawtags: TagSet=TagSet(Normalized=False)              # A list of tags with case unnormalized (as it actually is on the page)
         self._OutgoingReferences: Optional[List[F3Reference]]=None  # A list of all the references on this page
@@ -149,7 +148,7 @@ class F3Page:
         self._Source: Optional[str]=None
 
     def __hash__(self):
-        return self._WikiFilename.__hash__()+self._DisplayTitle.__hash__()+self._Name.__hash__()+self._Redirect.__hash__()+self._UltimateRedirect.__hash__()+self._Tags.__hash__()+self._OutgoingReferences.__hash__()
+        return self._WikiFilename.__hash__()+self._DisplayTitle.__hash__()+self._Name.__hash__()+self._Redirect.__hash__()+self._Tags.__hash__()+self._OutgoingReferences.__hash__()
 
     def __eq__(self, rhs: F3Page) -> bool:
         if self._WikiFilename != rhs._WikiFilename:
@@ -159,8 +158,6 @@ class F3Page:
         if self._Name != rhs._Name:
             return False
         if self._Redirect != rhs._Redirect:
-            return False
-        if self._UltimateRedirect != rhs._UltimateRedirect:
             return False
         if self._Tags != rhs._Tags:
             return False
@@ -209,13 +206,10 @@ class F3Page:
 
     @property
     def UltimateRedirect(self) -> Optional[str]:
-        if self._UltimateRedirect is not None:
-            return self._UltimateRedirect
-        return self._Name
-    @UltimateRedirect.setter
-    def UltimateRedirect(self, val: str):
-        self._UltimateRedirect=val
-
+        if self.IsRedirectpage:
+            return self.Redirect
+        return self.Name
+    # There is no setter since this is computer
 
     @property
     def IsRedirectpage(self) -> bool:
@@ -381,9 +375,9 @@ def DigestPage(sitepath: str, pagefname: str) ->Optional[F3Page]:
             fp.WikiFilename=child.text
         if child.tag == "urlname":
             fp.WikiUrlname=child.text
-        if child.tag == "isredirectpage":
-            #assert(True)
-            fp.Isredirectpage=child.text
+        #if child.tag == "isredirectpage":
+            # assert(True)
+ #           fp.Isredirectpage=child.text
         if child.tag == "numrevisions":
             fp.NumRevisions=child.text
         if child.tag == "pageid":
@@ -425,7 +419,7 @@ def DigestPage(sitepath: str, pagefname: str) ->Optional[F3Page]:
     if len(found) > 0:
         for f in found:
             if f not in fp.Tags:
-                print(fp.DisplayTitle+": tag '"+f+"' found in [[Category:]] but not in metadata")
+                print("In page '"+fp.Name+"' tag '"+f+"' was found in [[Category:]] but not in the metadata")
         fp.Tags.add(found)
         Log("  Category(s) found:"+" | ".join(found), Print=False)
 
