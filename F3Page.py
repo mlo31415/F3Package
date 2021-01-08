@@ -437,7 +437,7 @@ def DigestPage(sitepath: str, pagefname: str) ->Optional[F3Page]:
     # Look for a table in the page
     # It will begin with "<tab head=top>" and end with "</tab>"
     # Look for the start and end
-    tab=SearchAndExtractBounded(source, "<tab[ ]+head=[\"]?top[\"]?>", "</tab>")
+    tab=SearchAndExtractBounded(source, "<tab(\s+head=[\"]?top[\"]?)?>", "</tab>")
     # If a table was found, split it into an array of lines
     if tab is not None:
         tab=tab.split("\n")
