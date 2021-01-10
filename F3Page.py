@@ -144,7 +144,7 @@ class F3Page:
         self._Timestamp: Optional[str]=None
         self._User: Optional[str]=None
         self._WindowsFilename: Optional[str]=None
-        self._Table: Optional[F3Table]=None
+        self._Table: List[F3Table]=[]
         self._Source: Optional[str]=None
 
     def __hash__(self):
@@ -331,10 +331,10 @@ class F3Page:
 
 
     @property
-    def Table(self) -> Optional[F3Table]:
+    def Table(self) -> List[F3Table]:
         return self._Table
     @Table.setter
-    def Table(self, val: Optional[F3Table]):
+    def Table(self, val: List[F3Table]):
         self._Table=val
 
 
@@ -375,7 +375,7 @@ def DigestPage(sitepath: str, pagefname: str) ->Optional[F3Page]:
             fp.WikiFilename=child.text
         if child.tag == "urlname":
             fp.WikiUrlname=child.text
-        #if child.tag == "isredirectpage":
+        if child.tag == "isredirectpage":
             # assert(True)
  #           fp.Isredirectpage=child.text
         if child.tag == "numrevisions":
@@ -415,6 +415,7 @@ def DigestPage(sitepath: str, pagefname: str) ->Optional[F3Page]:
         fp.DisplayTitle=found[0]
         Log("  DISPLAYTITLE found: '"+found[0]+"'", Print=False)
 
+
     found, source=SearchAndReplace("\[\[Category:\s*(.+?)\s*\]\]", source, "")
     if len(found) > 0:
         for f in found:
@@ -434,12 +435,12 @@ def DigestPage(sitepath: str, pagefname: str) ->Optional[F3Page]:
     found, source=SearchAndReplace('\[\[html\]\].*?\[\[/html\]\]', source, "", numGroups=0)
 
     #--------------
-    # Look for a table in the page
-    # It will begin with "<tab head=top>" and end with "</tab>"
+    # Look for tables in the page (there really should only be one, but sometimes...)
+    # It will begin with "<tab head=top>" (or sometimes just "<tab>" and end with "</tab>"
     # Look for the start and end
-    tab=SearchAndExtractBounded(source, "<tab(\s+head=[\"]?top[\"]?)?>", "</tab>")
-    # If a table was found, split it into an array of lines
-    if tab is not None:
+    tab, src=SearchAndExtractBounded(source, "<tab(\s+head=[\"]?top[\"]?)?>", "</tab>")
+    while tab is not None:
+        # If a table was found, split it into an array of lines
         tab=tab.split("\n")
         # The structure of a table is:
         #   <tab head=top>
@@ -456,7 +457,8 @@ def DigestPage(sitepath: str, pagefname: str) ->Optional[F3Page]:
                     f3t.Headers=[l.strip() for l in line.split("||")]
                     continue
                 f3t.AppendRow([l.strip() for l in line.split("||")])
-            fp.Table=f3t
+            fp.Table.append(f3t)
+        tab, src=SearchAndExtractBounded(src, "<tab(\s+head=[\"]?top[\"]?)?>", "</tab>")
 
     # Now we scan the source for outgoing links.
     # A link is one of these formats:
