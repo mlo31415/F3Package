@@ -377,7 +377,7 @@ def DigestPage(sitepath: str, pagefname: str) ->Optional[F3Page]:
             fp.WikiUrlname=child.text
         if child.tag == "isredirectpage":
             # assert(True)
- #           fp.Isredirectpage=child.text
+            fp.Isredirectpage=child.text
         if child.tag == "numrevisions":
             fp.NumRevisions=child.text
         if child.tag == "pageid":
