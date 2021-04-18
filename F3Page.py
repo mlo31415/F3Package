@@ -419,6 +419,9 @@ def DigestPage(sitepath: str, pagefname: str) ->Optional[F3Page]:
     found, source=SearchAndReplace("\[\[[Cc]ategory:\s*(.+?)\s*\]\]", source, "")
     if len(found) > 0:
         for f in found:
+            # A "|" indicates that the category sortorder was over-ridden.  The "|" and everything following should be ignored here.
+            if "|" in f:
+                f=f[:f.index("|")]
             if f not in fp.Tags:
                 print("In page '"+fp.Name+"' tag '"+f+"' was found in [[Category:]] but not in the metadata")
         fp.Tags.add(found)
