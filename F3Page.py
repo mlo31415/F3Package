@@ -416,7 +416,7 @@ def DigestPage(sitepath: str, pagefname: str) ->Optional[F3Page]:
         #Log("  DISPLAYTITLE found: '"+found[0]+"'", Print=False)
 
 
-    found, source=SearchAndReplace("\[\[Category:\s*(.+?)\s*\]\]", source, "")
+    found, source=SearchAndReplace("\[\[[Cc]ategory:\s*(.+?)\s*\]\]", source, "")
     if len(found) > 0:
         for f in found:
             if f not in fp.Tags:
