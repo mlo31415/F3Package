@@ -423,7 +423,7 @@ def DigestPage(sitepath: str, pagefname: str) ->Optional[F3Page]:
             if "|" in f:
                 f=f[:f.index("|")]
             if f not in fp.Tags:
-                print("In page '"+fp.Name+"' tag '"+f+"' was found in [[Category:]] but not in the metadata")
+                Log("In page '"+fp.Name+"' tag '"+f+"' was found in [[Category:]] but not in the metadata")
         fp.Tags.add(found)
         #Log("  Category(s) found:"+" | ".join(found), Print=False)
 
@@ -479,7 +479,7 @@ def DigestPage(sitepath: str, pagefname: str) ->Optional[F3Page]:
     # Now extract the links containing a '|' and add them to the set of output References
     lnks2, source=SearchAndReplace("\[\[([^\|\[\]]\|[^\|\[\]]+?)\]\]", source, "") # Look for [[stuff|morestuff]] where stuff and morestuff does not contain any '|'s '['s or ']'s
     for linktext in lnks2:  # Process the links of the form [[xxx|yyy]]
-        Log("   "+pagefname+" has a link: '"+linktext+"'", Print=False)
+        Log("   "+pagefname+" has a link: '"+linktext+"'")
         # Now look at the possibility of the link containing display text.  If there is a "|" in the link, then only the text to the left of the "|" is the link
         if "|" in linktext:
             linktext=linktext.split("|")
