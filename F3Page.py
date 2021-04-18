@@ -400,7 +400,7 @@ def DigestPage(sitepath: str, pagefname: str) ->Optional[F3Page]:
 
     fp.WindowsFilename=pagefname
 
-    Log("Page: "+fp.Name, Print=False)
+    #Log("Page: "+fp.Name, Print=False)
 
     # Open and read the page's source
     with open(os.path.join(pagePathTxt), "rb") as f:   # Reading in binary and doing the funny decode is to handle special characters embedded in some sources.
@@ -413,7 +413,7 @@ def DigestPage(sitepath: str, pagefname: str) ->Optional[F3Page]:
     found, source=SearchAndReplace("^{{DISPLAYTITLE:\s*(.+?)\}\}", source, "") # Note use of lazy quantifier
     if len(found) == 1:
         fp.DisplayTitle=found[0]
-        Log("  DISPLAYTITLE found: '"+found[0]+"'", Print=False)
+        #Log("  DISPLAYTITLE found: '"+found[0]+"'", Print=False)
 
 
     found, source=SearchAndReplace("\[\[Category:\s*(.+?)\s*\]\]", source, "")
@@ -422,13 +422,13 @@ def DigestPage(sitepath: str, pagefname: str) ->Optional[F3Page]:
             if f not in fp.Tags:
                 print("In page '"+fp.Name+"' tag '"+f+"' was found in [[Category:]] but not in the metadata")
         fp.Tags.add(found)
-        Log("  Category(s) found:"+" | ".join(found), Print=False)
+        #Log("  Category(s) found:"+" | ".join(found), Print=False)
 
     # If the page is a redirect, we're done.
     found, source=SearchAndReplace("^#[Rr][Ee][Dd][Ii][Rr][Ee][Cc][Tt]\s*\[\[(.+?)\]\]", source, "")        # Ugly way to handle UC/lc, but it needs to be in the pattern
     if len(found) == 1: # If we found a redirect, then there's no point in looking for links, also, so we're done.
         fp.Redirect=WikiRedirectToPagename(found[0])
-        Log("  Redirect found: '"+found[0]+"'", Print=False)
+        #Log("  Redirect found: '"+found[0]+"'", Print=False)
         return fp
 
     # Some kinds of wiki markup show up as [[html]]...[[/html]] and we want to ignore all this
@@ -471,7 +471,7 @@ def DigestPage(sitepath: str, pagefname: str) ->Optional[F3Page]:
     lnks1, source=SearchAndReplace("\[\[([^\|\[\]]+?)\]\]", source, "") # Look for [[stuff]] where stuff does not contain any '|'s '['s or ']'s
     for linktext in lnks1:
         links.add(F3Reference(LinkDisplayText=linktext.strip(), ParentPageName=pagefname, LinkWikiName=WikiUrlnameToWikiPagename(linktext.strip())))
-        Log("  Link: '"+linktext+"'", Print=False)
+        #Log("  Link: '"+linktext+"'", Print=False)
 
     # Now extract the links containing a '|' and add them to the set of output References
     lnks2, source=SearchAndReplace("\[\[([^\|\[\]]\|[^\|\[\]]+?)\]\]", source, "") # Look for [[stuff|morestuff]] where stuff and morestuff does not contain any '|'s '['s or ']'s
