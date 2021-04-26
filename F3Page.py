@@ -415,7 +415,15 @@ def DigestPage(sitepath: str, pagefname: str) ->Optional[F3Page]:
         fp.DisplayTitle=found[0]
         #Log("  DISPLAYTITLE found: '"+found[0]+"'", Print=False)
 
+    # Is this a redirect page?
+    # (We check this before looking for Categories because it could be a redirect *to* a category!)
+    isredirect=False
+    found, source=SearchAndReplace("^#[Rr][Ee][Dd][Ii][Rr][Ee][Cc][Tt]\s*\[\[(.+?)\]\]", source, "")        # Ugly way to handle UC/lc, but it needs to be in the pattern
+    if len(found) == 1: # If we found a redirect, then there's no point in looking for links, also, so we're done.
+        fp.Redirect=WikiRedirectToPagename(found[0])
+        isredirect=True #flags=re.IGNORECASE
 
+    # Look for Category statements
     found, source=SearchAndReplace("\[\[[Cc]ategory:\s*(.+?)\s*\]\]", source, "")
     if len(found) > 0:
         for f in found:
@@ -427,11 +435,8 @@ def DigestPage(sitepath: str, pagefname: str) ->Optional[F3Page]:
         fp.Tags.add(found)
         #Log("  Category(s) found:"+" | ".join(found), Print=False)
 
-    # If the page is a redirect, we're done.
-    found, source=SearchAndReplace("^#[Rr][Ee][Dd][Ii][Rr][Ee][Cc][Tt]\s*\[\[(.+?)\]\]", source, "")        # Ugly way to handle UC/lc, but it needs to be in the pattern
-    if len(found) == 1: # If we found a redirect, then there's no point in looking for links, also, so we're done.
-        fp.Redirect=WikiRedirectToPagename(found[0])
-        #Log("  Redirect found: '"+found[0]+"'", Print=False)
+    # If the page was a redirect, we're done.
+    if isredirect:
         return fp
 
     # Some kinds of wiki markup show up as [[html]]...[[/html]] and we want to ignore all this
