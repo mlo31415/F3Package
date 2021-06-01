@@ -426,7 +426,7 @@ def DigestPage(sitepath: str, pagefname: str) ->Optional[F3Page]:
         #Log("  DISPLAYTITLE found: '"+found[0]+"'", Print=False)
 
     # Is this a redirect page?
-    # (We check this before looking for Categories because it could be a redirect *to* a category!)
+    # (We check this before looking at the Categories because the page could be a redirect *to* a category!)
     isredirect=False
     found, source=SearchAndReplace("^#redirect\s*\[\[(.+?)\]\]", source, "", caseinsensitive=True)        # Ugly way to handle UC/lc, but it needs to be in the pattern
     if len(found) == 1: # If we found a redirect, then there's no point in looking for links, also, so we're done.
