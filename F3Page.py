@@ -5,6 +5,7 @@ from typing import Optional, List, Union, Set, Any
 import os
 import xml.etree.ElementTree as ET
 import re
+import concurrent.futures
 
 from F3Reference import F3Reference
 
@@ -365,8 +366,19 @@ def DigestPage(sitepath: str, pagefname: str) ->Optional[F3Page]:
 
     fp=F3Page()
 
-    # Read the xml file
-    tree=ET.parse(pagePathXml)
+    # In the hope of speeding up the slowest part of this, use multithreading to overlap reading of source and xml files
+    def LoadXML(pagePathXml: str) -> ET:
+        # Read the xml file
+        return ET.parse(pagePathXml)
+    def LoadSource(pagePathTxt: str) -> str:
+        # Open and read the page's source
+        with open(os.path.join(pagePathTxt), "rb") as f:   # Reading in binary and doing the funny decode is to handle special characters embedded in some sources.
+            return f.read().decode("utf8") # decode("cp437") is magic to handle funny foreign characters
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        tree=executor.submit(LoadXML, pagePathXml).result()
+        source=executor.submit(LoadSource, pagePathTxt).result()
+
+    # Now process the xml
     root=tree.getroot()
     for child in root:
         if child.tag == "title":        # Must match tags set in FancyDownloader.SaveMetadata()
@@ -402,9 +414,7 @@ def DigestPage(sitepath: str, pagefname: str) ->Optional[F3Page]:
 
     #Log("Page: "+fp.Name, Print=False)
 
-    # Open and read the page's source
-    with open(os.path.join(pagePathTxt), "rb") as f:   # Reading in binary and doing the funny decode is to handle special characters embedded in some sources.
-        source=f.read().decode("utf8") # decode("cp437") is magic to handle funny foreign characters
+    # Now process the page sources
     if len(source) == 0:
         return None
     fp.Source=source
