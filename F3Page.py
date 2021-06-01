@@ -410,7 +410,7 @@ def DigestPage(sitepath: str, pagefname: str) ->Optional[F3Page]:
     fp.Source=source
 
     # Remove some bits of code that are not relevant and might confuse by replacing them with the empty string
-    found, source=SearchAndReplace("^{{displaytitle:\s*(.+?)\}\}", source, "", caseinsensntive=True) # Note use of lazy quantifier
+    found, source=SearchAndReplace("^{{displaytitle:\s*(.+?)\}\}", source, "", caseinsensitive=True) # Note use of lazy quantifier
     if len(found) == 1:
         fp.DisplayTitle=found[0]
         #Log("  DISPLAYTITLE found: '"+found[0]+"'", Print=False)
@@ -418,13 +418,13 @@ def DigestPage(sitepath: str, pagefname: str) ->Optional[F3Page]:
     # Is this a redirect page?
     # (We check this before looking for Categories because it could be a redirect *to* a category!)
     isredirect=False
-    found, source=SearchAndReplace("^#redirect\s*\[\[(.+?)\]\]", source, "", caseinsensntive=True)        # Ugly way to handle UC/lc, but it needs to be in the pattern
+    found, source=SearchAndReplace("^#redirect\s*\[\[(.+?)\]\]", source, "", caseinsensitive=True)        # Ugly way to handle UC/lc, but it needs to be in the pattern
     if len(found) == 1: # If we found a redirect, then there's no point in looking for links, also, so we're done.
         fp.Redirect=WikiRedirectToPagename(found[0])
         isredirect=True
 
     # Look for Category statements
-    found, source=SearchAndReplace("\[\[category:\s*(.+?)\s*\]\]", source, "", caseinsensntive=True)
+    found, source=SearchAndReplace("\[\[category:\s*(.+?)\s*\]\]", source, "", caseinsensitive=True)
     if len(found) > 0:
         for f in found:
             # A "|" indicates that the category sortorder was over-ridden.  The "|" and everything following should be ignored here.
@@ -440,7 +440,7 @@ def DigestPage(sitepath: str, pagefname: str) ->Optional[F3Page]:
         return fp
 
     # Some kinds of wiki markup show up as [[html]]...[[/html]] and we want to ignore all this
-    found, source=SearchAndReplace('\[\[html\]\].*?\[\[/html\]\]', source, "", numGroups=0, caseinsensntive=True)
+    found, source=SearchAndReplace('\[\[html\]\].*?\[\[/html\]\]', source, "", numGroups=0, caseinsensitive=True)
 
     #--------------
     # Look for tables in the page (there really should only be one, but sometimes...)
