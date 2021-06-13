@@ -1,6 +1,6 @@
 # A file to define a class to extract and hold the characteristics of a Fancy 3 page
 from __future__ import annotations
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Optional, List, Union, Set, Any
 import os
 import xml.etree.ElementTree as ET
@@ -145,7 +145,7 @@ class F3Page:
         self._Timestamp: Optional[str]=None
         self._User: Optional[str]=None
         self._WindowsFilename: Optional[str]=None
-        self._Table: List[F3Table]=[]
+        self._Table: List[int] = field(default_factory=list)
         self._Source: Optional[str]=None
 
     def __hash__(self):
