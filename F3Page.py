@@ -200,8 +200,6 @@ def DigestPage(sitepath: str, pagefname: str) -> Optional[F3Page]:
         Log("DigestPage: Couldn't find '"+pagePathXml+"'")
         return None
 
-    fp=F3Page()
-
     # In the hope of speeding up the slowest part of this, use multithreading to overlap reading of source and xml files
     def LoadXML(pagePathXml: str) -> ET:
         # Read the xml file
@@ -215,6 +213,8 @@ def DigestPage(sitepath: str, pagefname: str) -> Optional[F3Page]:
         source=executor.submit(LoadSource, pagePathTxt).result()
 
     # Now process the xml
+    fp=F3Page()
+    fp.Rawtags.Normalized=True  #This really should be done as part of the F3Page call!
     root=tree.getroot()
     for child in root:
         if child.tag == "title":        # Must match tags set in FancyDownloader.SaveMetadata()
