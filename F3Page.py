@@ -2,6 +2,7 @@
 from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Optional, List, Union, Set, Any
+
 import os
 import xml.etree.ElementTree as ET
 import re
@@ -128,223 +129,58 @@ class TagSet:
 ###################################################################################################
 @dataclass(order=False)
 class F3Page:
-    def __init__(self):
-        self._WikiFilename: Optional[str]=None                      # The page's Mediawiki "file" name, e.g., Now_Is_the_Time
-        self._DisplayTitle: Optional[str]=None                      # The title displayed for the page (takes DISPLAYTITLE into account if it has been set; otherwise is Name)
-        self._Name: Optional[str]=None                              # The page's Mediawiki name (ignores DISPLAYTITLE, so if DISPLAYTITLE is absent is the same as DisplayTitle)  e.g., Now Is the Time
-        self._Redirect: Optional[str]=None                          # If this is a redirect page, the Wikiname name of the page to which it redirects
-        self._Tags: TagSet=TagSet()                                 # A list of tags associated with this page. The case has been normalized
-        self._Rawtags: TagSet=TagSet(Normalized=False)              # A list of tags with case unnormalized (as it actually is on the page)
-        self._OutgoingReferences: Optional[List[F3Reference]]=None  # A list of all the references on this page
-        self._WikiUrlname: Optional[str]=None
-        self._NumRevisions: Optional[int]=None
-        self._Pageid: Optional[str]=None
-        self._Revid: Optional[str]=None
-        self._Edittime: Optional[str]=None
-        self._Permalink: Optional[str]=None
-        self._Timestamp: Optional[str]=None
-        self._User: Optional[str]=None
-        self._WindowsFilename: Optional[str]=None
-        self._Table: List[int] = field(default_factory=list)
-        self._Source: Optional[str]=None
+    WikiFilename: str=""                      # The page's Mediawiki "file" name, e.g., Now_Is_the_Time
+    DisplayTitle: str=""                      # The title displayed for the page (takes DISPLAYTITLE into account if it has been set; otherwise is Name)
+    Name: str=""                              # The page's Mediawiki name (ignores DISPLAYTITLE, so if DISPLAYTITLE is absent is the same as DisplayTitle)  e.g., Now Is the Time
+    Redirect: str=""                         # If this is a redirect page, the Wikiname name of the page to which it redirects
+    Tags: TagSet=field(default_factory=TagSet)                                 # A list of tags associated with this page. The case has been normalized
+    Rawtags: TagSet=field(default_factory=TagSet, init=True)              # A list of tags with case unnormalized (as it actually is on the page)
+    OutgoingReferences: List[F3Reference]=field(default_factory=list)  # A list of all the references on this page
+    WikiUrlname: str=""
+    NumRevisions: int=0
+    Pageid: int=0
+    Revid: int=0
+    Edittime: str=""
+    Permalink: str=""
+    Timestamp: str=""
+    User: str=""
+    WindowsFilename: str=""
+    Table: List[int]=field(default_factory=list)
+    Source: str=""
 
     def __hash__(self):
-        return self._WikiFilename.__hash__()+self._DisplayTitle.__hash__()+self._Name.__hash__()+self._Redirect.__hash__()+self._Tags.__hash__()+self._OutgoingReferences.__hash__()
+        return self.WikiFilename.__hash__()+self.DisplayTitle.__hash__()+self.Name.__hash__()+self.Redirect.__hash__()+self.Tags.__hash__()+self.OutgoingReferences.__hash__()
 
     def __eq__(self, rhs: F3Page) -> bool:
-        if self._WikiFilename != rhs._WikiFilename:
+        if self.WikiFilename != rhs.WikiFilename:
             return False
-        if self._DisplayTitle != rhs._DisplayTitle:
+        if self.DisplayTitle != rhs.DisplayTitle:
             return False
-        if self._Name != rhs._Name:
+        if self.Name != rhs.Name:
             return False
-        if self._Redirect != rhs._Redirect:
+        if self.Redirect != rhs.Redirect:
             return False
-        if self._Tags != rhs._Tags:
+        if self.Tags != rhs.Tags:
             return False
-        if self._OutgoingReferences != rhs._OutgoingReferences:
+        if self.OutgoingReferences != rhs.OutgoingReferences:
             return False
         return True
 
     def IsPerson(self) -> bool:
-        return self._Tags is not None and ("Fan" in self._Tags or "Pro" in self._Tags) and \
-               ("Person" in self._Tags or "Publisher" not in self._Tags)    # "Publisher" is an organization, but if the page is marked Person, let it be
+        return self.Tags is not None and ("Fan" in self.Tags or "Pro" in self.Tags) and \
+               ("Person" in self.Tags or "Publisher" not in self.Tags)    # "Publisher" is an organization, but if the page is marked Person, let it be
 
 
     @property
-    def DisplayTitle(self) -> str:
-        if self._DisplayTitle is not None:
-            return self._DisplayTitle
-        return self._Name
-    @DisplayTitle.setter
-    def DisplayTitle(self, val: Optional[str]):
-        self._DisplayTitle=val
-
-
-    @property
-    def WikiUrlname(self) -> str:
-        return self._WikiUrlname
-    @WikiUrlname.setter
-    def WikiUrlname(self, val: Optional[str]):
-        self._WikiUrlname=val
-
-
-    @property
-    def Name(self) -> str:
-        return self._Name
-    @Name.setter
-    def Name(self, val: Optional[str]):
-        self._Name=val
-
-
-    @property
-    def Redirect(self) -> str:
-        return self._Redirect
-    @Redirect.setter
-    def Redirect(self, val: Optional[str]):
-        self._Redirect=val
-
-
-    @property
-    def UltimateRedirect(self) -> Optional[str]:
+    def UltimateRedirect(self) -> str:
         if self.IsRedirectpage:
             return self.Redirect
         return self.Name
-    # There is no setter since this is computer
+    # There is no setter since this is computed
 
     @property
     def IsRedirectpage(self) -> bool:
-        return self._Redirect is not None and len(self._Redirect) > 0
-
-    @property
-    def Tags(self) -> TagSet[str]:
-        return self._Tags
-    @Tags.setter
-    def Tags(self, val: Any):
-        assert(True)
-    @property
-    def Rawtags(self) -> TagSet[str]:
-        return self._Rawtags
-
-
-    @property
-    def OutgoingReferences(self) -> List[F3Reference]:
-        return self._OutgoingReferences
-    @OutgoingReferences.setter
-    def OutgoingReferences(self, val: Optional[str]):
-        self._OutgoingReferences=val
-
-
-    @property
-    def WikiFilename(self) -> Optional[str]:
-        return self._WikiFilename
-    @WikiFilename.setter
-    def WikiFilename(self, val: Optional[str]):
-        self._WikiFilename=val
-
-
-    @property
-    def NumRevisions(self) -> Optional[int]:
-        return self._NumRevisions
-    @NumRevisions.setter
-    def NumRevisions(self, val: Union[str, int]):
-        if isinstance(val, int):
-            self._NumRevisions=val
-        elif isinstance(val, str):
-            if IsInt(val):
-                self._NumRevisions=int(val)
-            else:
-                Log("F3Page.NumRevisions setter: not an int: '"+val+"'", isError=True)
-        else:
-            self._NumRevisions=None
-
-
-    @property
-    def Pageid(self) -> Optional[int]:
-        return self._Pageid
-    @Pageid.setter
-    def Pageid(self, val: Union[str, int]):
-        if isinstance(val, int):
-            self._Pageid=val
-        elif isinstance(val, str):
-            if IsInt(val):
-                self._Pageid=int(val)
-            else:
-                Log("F3Page.Pageid setter: not an int: '"+val+"'", isError=True)
-        else:
-            self._Pageid=None
-
-
-    @property
-    def Revid(self) -> Optional[int]:
-        return self._Revid
-    @Revid.setter
-    def Revid(self, val: Union[str, int]):
-        if isinstance(val, int):
-            self._Revid=val
-        elif isinstance(val, str):
-            if IsInt(val):
-                self._Revid=int(val)
-            else:
-                Log("F3Page.Revid setter: not an int: '"+val+"'", isError=True)
-        else:
-            self._Revid=None
-
-
-    @property
-    def Edittime(self) -> Optional[str]:
-        return self._Edittime
-    @Edittime.setter
-    def Edittime(self, val: Optional[str]):
-        self._Edittime=val
-
-
-    @property
-    def Permalink(self) -> Optional[str]:
-        return self._Permalink
-    @Permalink.setter
-    def Permalink(self, val: Optional[str]):
-        self._Permalink=val
-
-
-    @property
-    def Timestamp(self) -> Optional[str]:
-        return self._Timestamp
-    @Timestamp.setter
-    def Timestamp(self, val: Optional[str]):
-        self._Timestamp=val
-
-
-    @property
-    def User(self) -> Optional[str]:
-        return self._User
-    @User.setter
-    def User(self, val: Optional[str]):
-        self._User=val
-
-
-    @property
-    def WindowsFilename(self) -> Optional[str]:
-        return self._WindowsFilename
-    @WindowsFilename.setter
-    def WindowsFilename(self, val: Optional[str]):
-        self._WindowsFilename=val
-
-
-    @property
-    def Table(self) -> List[F3Table]:
-        return self._Table
-    @Table.setter
-    def Table(self, val: List[F3Table]):
-        self._Table=val
-
-
-    @property
-    def Source(self) -> Optional[str]:
-        return self._Source
-    @Source.setter
-    def Source(self, val: Optional[str]):
-        self._Source=val
+        return self.Redirect != ""
 
 
 # ==================================================================================
@@ -352,7 +188,7 @@ class F3Page:
 # ==================================================================================
 # Read a page and return a FancyPage
 # pagePath will be the path to the page's source (i.e., ending in .txt)
-def DigestPage(sitepath: str, pagefname: str) ->Optional[F3Page]:
+def DigestPage(sitepath: str, pagefname: str) -> Optional[F3Page]:
 
     pagePathTxt=os.path.join(sitepath, pagefname)+".txt"
     pagePathXml=os.path.join(sitepath, pagefname)+".xml"
