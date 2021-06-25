@@ -81,7 +81,7 @@ def normalize(val: str) -> str:
         v="First Fandom"
     return v
 
-class TagSet():
+class TagSet:
     def __init__(self, tag: Optional[str]=None, Normalized=True) -> None:
         self._set=set()
         self._normalized=Normalized
