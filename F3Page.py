@@ -13,51 +13,21 @@ from F3Reference import F3Reference
 from Log import Log
 from HelpersPackage import IsInt, WikiUrlnameToWikiPagename, SearchAndReplace, WikiRedirectToPagename, SearchAndExtractBounded
 
+@dataclass
 class F3Table:
-    def __init__(self):
-        self._headers: Optional[List[str]]=None
-        self._rows: Optional[List[List[str]]]=None
-        self._type: Optional[str]=None              # A string corresponding to one of the F3 page categories
+    Headers: List[str]=field(default_factory=list)
+    Rows: List[List[str]]=field(default_factory=list)
+    Type: str=""              # A string corresponding to one of the F3 page categories
 
     #...........................
-    @property
-    def Headers(self) -> Optional[List[str]]:
-        return self._headers
-    @Headers.setter
-    def Headers(self, val: Optional[List[str]]):
-        self._headers=val
-
-    #...........................
-    @property
-    def Type(self) -> Optional[str]:
-        return self._type
-    @Type.setter
-    def Type(self, val: Optional[str]):
-        self._type=val
-
-    #...........................
-    @property
-    def Rows(self) -> List[List[str]]:
-        return self._rows
-    @Rows.setter
-    def Rows(self, val: Optional[List[List[str]]]):
-        self._rows=val
-
-    def AppendRow(self, val: List[str]):
-        if self._rows is None:
-            self._rows=[]
-        self._rows.append(val)
-
     def __len__(self) -> int:
-        if self._rows is None:
-            return 0
-        return len(self._rows)
+        return len(self.Rows)
 
     #...........................
     def __getitem__(self, i: int) -> Optional[List[str]]:
-        if self._rows is None or len(self._rows) <= i:
+        if len(self.Rows) <= i:
             return None
-        return self._rows[i]
+        return self.Rows[i]
 
 
 
