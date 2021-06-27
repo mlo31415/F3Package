@@ -1,7 +1,7 @@
 # A file to define a class to extract and hold the characteristics of a Fancy 3 page
 from __future__ import annotations
 from dataclasses import dataclass, field
-from typing import Optional, List, Union, Set, Any
+from typing import Optional, List, Union, Set
 
 import os
 import xml.etree.ElementTree as ET
@@ -288,6 +288,7 @@ def DigestPage(sitepath: str, pagefname: str) -> Optional[F3Page]:
                 if len(line) == 0:
                     continue
                 if f3t is None:
+                    # Add the 1st line which is column headers
                     f3t=F3Table()
                     f3t.Headers=[l.strip() for l in line.split("||")]
                     continue
