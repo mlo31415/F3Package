@@ -104,7 +104,7 @@ class F3Page:
     Name: str=""                              # The page's Mediawiki name (ignores DISPLAYTITLE, so if DISPLAYTITLE is absent is the same as DisplayTitle)  e.g., Now Is the Time
     Redirect: str=""                         # If this is a redirect page, the Wikiname name of the page to which it redirects
     Tags: TagSet=field(default_factory=TagSet)                                 # A list of tags associated with this page. The case has been normalized
-    Rawtags: TagSet=field(default_factory=TagSet, init=True)              # A list of tags with case unnormalized (as it actually is on the page)
+    Rawtags: TagSet=field(default_factory=TagSet)              # A list of tags with case unnormalized (as it actually is on the page)
     OutgoingReferences: List[F3Reference]=field(default_factory=list)  # A list of all the references on this page
     WikiUrlname: str=""
     NumRevisions: int=0
@@ -138,9 +138,19 @@ class F3Page:
 
     @property
     def IsPerson(self) -> bool:
-        return self.Tags is not None and ("Fan" in self.Tags or "Pro" in self.Tags) and \
-               ("Person" in self.Tags or "Publisher" not in self.Tags)    # "Publisher" is an organization, but if the page is marked Person, let it be
+        return ("Fan" in self.Tags or "Pro" in self.Tags) and ("Person" in self.Tags or "Publisher" not in self.Tags)    # "Publisher" is an organization, but if the page is marked Person, let it be
 
+    def IsFan(self) -> bool:
+        return "Fan" in self.Tags
+
+    def IsFanzine(self) -> bool:
+        return "Fanzine" in self.Tags or "Newszine" in self.Tags or "Apazine" in self.Tags or "Clubzine" in self.Tags   # When the database is cleaner we'll only need to check Fanzine
+
+    def IsClub(self) -> bool:
+        return "Club" in self.Tags
+
+    def IsCon(self) -> bool:
+        return "Convention" in self.Tags    # Both cons and con series
 
     @property
     def UltimateRedirect(self) -> str:
@@ -185,7 +195,7 @@ def DigestPage(sitepath: str, pagefname: str) -> Optional[F3Page]:
 
     # Now process the xml
     fp=F3Page()
-    fp.Rawtags.Normalized=True  #This really should be done as part of the F3Page call!
+    fp.Rawtags.Normalized=False  # This really should be done as part of the F3Page creation!
     root=tree.getroot()
     for child in root:
         if child.tag == "title":        # Must match tags set in FancyDownloader.SaveMetadata()
@@ -281,8 +291,11 @@ def DigestPage(sitepath: str, pagefname: str) -> Optional[F3Page]:
                     f3t=F3Table()
                     f3t.Headers=[l.strip() for l in line.split("||")]
                     continue
-                f3t.AppendRow([l.strip() for l in line.split("||")])
-            fp.Table.append(f3t)
+                # Add an ordinary line
+                f3t.Rows.append([l.strip() for l in line.split("||")])
+
+            fp.Tables.append(f3t)
+        # Get the next tab and then loop
         tab, src=SearchAndExtractBounded(src, "<tab(\s+head=[\"]?top[\"]?)?>", "</tab>")
 
     # Now we scan the source for outgoing links.
