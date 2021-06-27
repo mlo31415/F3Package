@@ -115,7 +115,7 @@ class F3Page:
     Timestamp: str=""
     User: str=""
     WindowsFilename: str=""
-    Table: List[int]=field(default_factory=list)
+    Tables: List[F3Table]=field(default_factory=list)
     Source: str=""
 
     def __hash__(self):
