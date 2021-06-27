@@ -11,7 +11,7 @@ import concurrent.futures
 from F3Reference import F3Reference
 
 from Log import Log
-from HelpersPackage import IsInt, WikiUrlnameToWikiPagename, SearchAndReplace, WikiRedirectToPagename, SearchAndExtractBounded
+from HelpersPackage import WikiUrlnameToWikiPagename, SearchAndReplace, WikiRedirectToPagename, SearchAndExtractBounded
 
 @dataclass
 class F3Table:
