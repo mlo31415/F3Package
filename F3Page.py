@@ -153,13 +153,6 @@ class F3Page:
         return "Convention" in self.Tags    # Both cons and con series
 
     @property
-    def UltimateRedirect(self) -> str:
-        if self.IsRedirectpage:
-            return self.Redirect
-        return self.Name
-    # There is no setter since this is computed
-
-    @property
     def IsRedirectpage(self) -> bool:
         return self.Redirect != ""
 
