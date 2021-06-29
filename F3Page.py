@@ -140,16 +140,28 @@ class F3Page:
     def IsPerson(self) -> bool:
         return ("Fan" in self.Tags or "Pro" in self.Tags) and ("Person" in self.Tags or "Publisher" not in self.Tags)    # "Publisher" is an organization, but if the page is marked Person, let it be
 
+    @property
     def IsFan(self) -> bool:
         return "Fan" in self.Tags
 
+    @property
     def IsFanzine(self) -> bool:
-        return "Fanzine" in self.Tags or "Newszine" in self.Tags or "Apazine" in self.Tags or "Clubzine" in self.Tags   # When the database is cleaner we'll only need to check Fanzine
+        return "Fanzine" in self.Tags or "Newszine" in self.Tags or "Apazine" in self.Tags or "Clubzine" in self.Tags or "Fanthology" in self.Tags  # When the database is cleaner we'll only need to check Fanzine
 
+    @property
+    def IsAPA(self) -> bool:
+        return "APA" in self.Tags
+
+    @property
     def IsClub(self) -> bool:
         return "Club" in self.Tags
 
-    def IsCon(self) -> bool:
+    @property
+    def IsConInstance(self) -> bool:
+        return "Convention" in self.Tags    # Both cons and con series
+
+    @property
+    def IsConSeries(self) -> bool:
         return "Convention" in self.Tags    # Both cons and con series
 
     @property
