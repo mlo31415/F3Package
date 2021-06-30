@@ -158,11 +158,11 @@ class F3Page:
 
     @property
     def IsConInstance(self) -> bool:
-        return "Convention" in self.Tags    # Both cons and con series
+        return "Convention" in self.Tags and "Conseries" not in self.Tags
 
     @property
     def IsConSeries(self) -> bool:
-        return "Convention" in self.Tags    # Both cons and con series
+        return "Conseries" in self.Tags
 
     @property
     def IsRedirectpage(self) -> bool:
