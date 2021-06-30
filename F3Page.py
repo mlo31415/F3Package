@@ -168,6 +168,22 @@ class F3Page:
     def IsRedirectpage(self) -> bool:
         return self.Redirect != ""
 
+    @property
+    def IsPublisher(self) -> bool:
+        return "Publisher" in self.Tags
+
+    @property
+    def IsNickname(self) -> bool:
+        return "Nickname" in self.Tags
+
+    @property
+    def IsLocale(self) -> bool:
+        return "Locale" in self.Tags
+
+    @property
+    def IsMundane(self) -> bool:
+        return "Mundane" in self.Tags
+
 
 # ==================================================================================
 # ==================================================================================
