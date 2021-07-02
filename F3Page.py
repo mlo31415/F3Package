@@ -192,27 +192,26 @@ class F3Page:
 # pagePath will be the path to the page's source (i.e., ending in .txt)
 def DigestPage(sitepath: str, pagefname: str) -> Optional[F3Page]:
 
-    pagePathTxt=os.path.join(sitepath, pagefname)+".txt"
-    pagePathXml=os.path.join(sitepath, pagefname)+".xml"
-
-    if not os.path.isfile(pagePathTxt):
-        Log("DigestPage: Couldn't find '"+pagePathTxt+"'")
-        return None
-    if not os.path.isfile(pagePathXml):
-        Log("DigestPage: Couldn't find '"+pagePathXml+"'")
-        return None
-
     # In the hope of speeding up the slowest part of this, use multithreading to overlap reading of source and xml files
-    def LoadXML(pagePathXml: str) -> ET:
+    def LoadXML(pagePathXml: str) -> Optional[ET]:
+        if not os.path.isfile(pagePathXml):
+            Log("DigestPage: Couldn't find '"+pagePathXml+"'")
+            return None
         # Read the xml file
         return ET.parse(pagePathXml)
-    def LoadSource(pagePathTxt: str) -> str:
+    def LoadSource(pagePathTxt: str) -> Optional[str]:
+        if not os.path.isfile(pagePathTxt):
+            Log("DigestPage: Couldn't find '"+pagePathTxt+"'")
+            return None
         # Open and read the page's source
         with open(os.path.join(pagePathTxt), "rb") as f:   # Reading in binary and doing the funny decode is to handle special characters embedded in some sources.
             return f.read().decode("utf8") # decode("cp437") is magic to handle funny foreign characters
     with concurrent.futures.ThreadPoolExecutor() as executor:
-        tree=executor.submit(LoadXML, pagePathXml).result()
-        source=executor.submit(LoadSource, pagePathTxt).result()
+        tree=executor.submit(LoadXML, os.path.join(sitepath, pagefname)+".xml").result()
+        source=executor.submit(LoadSource, os.path.join(sitepath, pagefname)+".txt").result()
+
+    if tree is None or source is None:
+        return None
 
     # Now process the xml
     fp=F3Page()
