@@ -11,7 +11,7 @@ import concurrent.futures
 from F3Reference import F3Reference
 
 from Log import Log
-from HelpersPackage import WikiUrlnameToWikiPagename, SearchAndReplace, WikiRedirectToPagename, SearchAndExtractBounded
+from HelpersPackage import WikiUrlnameToWikiPagename, SearchAndReplace, WikiRedirectToPagename, SearchAndExtractBounded, CapitalizeFirstChar
 
 @dataclass
 class F3Table:
@@ -329,7 +329,10 @@ def DigestPage(sitepath: str, pagefname: str) -> Optional[F3Page]:
     # Extract the simple links
     lnks1, source=SearchAndReplace("\[\[([^\|\[\]]+?)\]\]", source, "") # Look for [[stuff]] where stuff does not contain any '|'s '['s or ']'s
     for linktext in lnks1:
-        links.add(F3Reference(LinkDisplayText=linktext.strip(), ParentPageName=pagefname, LinkWikiName=WikiUrlnameToWikiPagename(linktext.strip())))
+        linktext=CapitalizeFirstChar(linktext.strip())
+        # For this purpose we ignore internal page references (i.e., anything after a '#')
+        #TODO: Consider passing this info on
+        links.add(F3Reference(LinkDisplayText=linktext, ParentPageName=pagefname, LinkWikiName=WikiUrlnameToWikiPagename(linktext)))
         #Log("  Link: '"+linktext+"'", Print=False)
 
     # Now extract the links containing a '|' and add them to the set of output References
@@ -341,7 +344,8 @@ def DigestPage(sitepath: str, pagefname: str) -> Optional[F3Page]:
             linktext=linktext.split("|")
             if len(linktext) > 2:
                 Log("Page("+pagefname+") has a link '"+"|".join(linktext)+"' with more than two components", isError=True)
-            links.add(F3Reference(LinkDisplayText=linktext[1].strip(), ParentPageName=pagefname, LinkWikiName=WikiUrlnameToWikiPagename(linktext[0].strip())))
+            linktext[0]=CapitalizeFirstChar(linktext[0].strip())
+            links.add(F3Reference(LinkDisplayText=linktext[1].strip(), ParentPageName=pagefname, LinkWikiName=WikiUrlnameToWikiPagename(linktext[0])))
         else:
             Log("***Page("+pagefname+"}: No '|' found in alleged double link: '"+linktext+"'", isError=True)
 
