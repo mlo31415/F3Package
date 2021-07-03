@@ -11,7 +11,7 @@ import concurrent.futures
 from F3Reference import F3Reference
 
 from Log import Log
-from HelpersPackage import WikiUrlnameToWikiPagename, SearchAndReplace, WikiRedirectToPagename, SearchAndExtractBounded, CapitalizeFirstChar
+from HelpersPackage import WikiUrlnameToWikiPagename, SearchAndReplace, WikiRedirectToPagename, SearchAndExtractBounded, CapitalizeFirstChar, WikiLinkSplit
 
 @dataclass
 class F3Table:
@@ -327,27 +327,14 @@ def DigestPage(sitepath: str, pagefname: str) -> Optional[F3Page]:
     links=set()     # Start out with a set so we don't keep duplicates. Note that we have defined a Reference() hash function, so we can compare sets
 
     # Extract the simple links
-    lnks1, source=SearchAndReplace("\[\[([^\|\[\]]+?)\]\]", source, "") # Look for [[stuff]] where stuff does not contain any '|'s '['s or ']'s
+    lnks1, source=SearchAndReplace("\[\[([^\]]+)\]\]", source, "") # Look for [[stuff]] where stuff does not contain any '|'s '['s or ']'s
     for linktext in lnks1:
+        linkparts=WikiLinkSplit(linktext)
+        links.add(F3Reference(LinkDisplayText=linkparts[2], ParentPageName=pagefname, LinkWikiName=WikiUrlnameToWikiPagename(linkparts[0]), LinkAnchor=linkparts[1]))
         linktext=CapitalizeFirstChar(linktext.strip())
         # For this purpose we ignore internal page references (i.e., anything after a '#')
-        #TODO: Consider passing this info on
         links.add(F3Reference(LinkDisplayText=linktext, ParentPageName=pagefname, LinkWikiName=WikiUrlnameToWikiPagename(linktext)))
         #Log("  Link: '"+linktext+"'", Print=False)
-
-    # Now extract the links containing a '|' and add them to the set of output References
-    lnks2, source=SearchAndReplace("\[\[([^\|\[\]]+?\|[^\|\[\]]+?)\]\]", source, "") # Look for [[stuff|morestuff]] where stuff and morestuff does not contain any '|'s '['s or ']'s
-    for linktext in lnks2:  # Process the links of the form [[xxx|yyy]]
-        #Log("   "+pagefname+" has a link: '"+linktext+"'")
-        # Now look at the possibility of the link containing display text.  If there is a "|" in the link, then only the text to the left of the "|" is the link
-        if "|" in linktext:
-            linktext=linktext.split("|")
-            if len(linktext) > 2:
-                Log("Page("+pagefname+") has a link '"+"|".join(linktext)+"' with more than two components", isError=True)
-            linktext[0]=CapitalizeFirstChar(linktext[0].strip())
-            links.add(F3Reference(LinkDisplayText=linktext[1].strip(), ParentPageName=pagefname, LinkWikiName=WikiUrlnameToWikiPagename(linktext[0])))
-        else:
-            Log("***Page("+pagefname+"}: No '|' found in alleged double link: '"+linktext+"'", isError=True)
 
     fp.OutgoingReferences=list(links)       # We need to turn the set into a list
     return fp
