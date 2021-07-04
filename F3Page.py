@@ -11,7 +11,7 @@ import concurrent.futures
 from F3Reference import F3Reference
 
 from Log import Log
-from HelpersPackage import WikiUrlnameToWikiPagename, SearchAndReplace, WikiRedirectToPagename, SearchAndExtractBounded, CapitalizeFirstChar, WikiLinkSplit
+from HelpersPackage import WikiUrlnameToWikiPagename, SearchAndReplace, WikiRedirectToPagename, SearchAndExtractBounded, WikiLinkSplit
 
 @dataclass
 class F3Table:
@@ -117,6 +117,7 @@ class F3Page:
     WindowsFilename: str=""
     Tables: List[F3Table]=field(default_factory=list)
     Source: str=""
+    Locale: str=""
 
     def __hash__(self):
         return self.WikiFilename.__hash__()+self.DisplayTitle.__hash__()+self.Name.__hash__()+self.Redirect.__hash__()+self.Tags.__hash__()+self.OutgoingReferences.__hash__()
@@ -281,6 +282,14 @@ def DigestPage(sitepath: str, pagefname: str) -> Optional[F3Page]:
                 Log("In page '"+fp.Name+"' tag '"+f+"' was found in [[Category:]] but not in the metadata")
         fp.Tags.add(found)
         #Log("  Category(s) found:"+" | ".join(found), Print=False)
+
+    # Look for locale=text located in a template call.
+    # We're looking for |<spaces?>[Ll]ocale=<spaces?><text>[|}]
+    m=re.search("\|\s*[Ll]ocale=([a-zA-Z\s.,\-]+)\s*[|}]", source)
+    if m is not None:
+        if m.groups()[0] is not None:
+            fp.Locale=m.groups()[0]
+
 
     # If the page was a redirect, we're done.
     if isredirect:
