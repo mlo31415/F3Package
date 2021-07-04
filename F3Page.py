@@ -340,9 +340,6 @@ def DigestPage(sitepath: str, pagefname: str) -> Optional[F3Page]:
     for linktext in lnks1:
         linkparts=WikiLinkSplit(linktext)
         links.add(F3Reference(LinkDisplayText=linkparts[2], ParentPageName=pagefname, LinkWikiName=WikiUrlnameToWikiPagename(linkparts[0]), LinkAnchor=linkparts[1]))
-        linktext=CapitalizeFirstChar(linktext.strip())
-        # For this purpose we ignore internal page references (i.e., anything after a '#')
-        links.add(F3Reference(LinkDisplayText=linktext, ParentPageName=pagefname, LinkWikiName=WikiUrlnameToWikiPagename(linktext)))
         #Log("  Link: '"+linktext+"'", Print=False)
 
     fp.OutgoingReferences=list(links)       # We need to turn the set into a list
