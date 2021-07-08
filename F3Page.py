@@ -32,25 +32,6 @@ class F3Table:
 
 
 ###################################################################################################
-def normalize(val: str) -> str:
-    if len(val) == 1:
-        return val.upper()
-
-    v=val[0].upper()+val[1:]
-    v=v.replace("_", " ")   # Mediawiki converts underscores to spaces
-    if v == "Us":
-        v="US"
-    elif v == "Uk":
-        v="UK"
-    elif v == "Nz":
-        v="NZ"
-    elif v == "Apa":
-        v="APA"
-    elif v == "Ia":
-        v = "IA"
-    elif v == "First fandom":
-        v="First Fandom"
-    return v
 
 class TagSet:
     def __init__(self, tag: Optional[str]=None, Normalized=True) -> None:
@@ -85,15 +66,35 @@ class TagSet:
         if self._normalized:
             temp=set()
             for v in val:
-                temp.add(normalize(v))
+                temp.add(self.NormalizeCertainNames(v))
             val=temp
         self._set=self._set.union(val)
 
     def __contains__(self, val: str) -> bool:
         # Do a case insensitive compare if the set is normalized
         if self._normalized:
-            val = normalize(val)
+            val = self.NormalizeCertainNames(val)
         return val in self._set
+
+    def NormalizeCertainNames(self, val: str) -> str:
+        if len(val) == 1:
+            return val.upper()
+
+        v=val[0].upper()+val[1:]
+        v=v.replace("_", " ")  # Mediawiki converts underscores to spaces
+        if v == "Us":
+            v="US"
+        elif v == "Uk":
+            v="UK"
+        elif v == "Nz":
+            v="NZ"
+        elif v == "Apa":
+            v="APA"
+        elif v == "Ia":
+            v="IA"
+        elif v == "First fandom":
+            v="First Fandom"
+        return v
 
 
 ###################################################################################################
