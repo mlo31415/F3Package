@@ -9,9 +9,8 @@ import re
 import concurrent.futures
 
 from F3Reference import F3Reference
-
 from Log import Log
-from HelpersPackage import WikiUrlnameToWikiPagename, SearchAndReplace, WikiRedirectToPagename, SearchAndExtractBounded, WikiLinkSplit
+from HelpersPackage import WikiUrlnameToWikiPagename, SearchAndReplace, WikiRedirectToPagename, SearchAndExtractBounded, WikiLinkSplit, WikidotCononicizeName
 
 @dataclass
 class F3Table:
@@ -118,7 +117,7 @@ class F3Page:
     WindowsFilename: str=""
     Tables: List[F3Table]=field(default_factory=list)
     Source: str=""
-    Locale: str=""
+    LocaleStr: str=""
 
     def __hash__(self):
         return self.WikiFilename.__hash__()+self.DisplayTitle.__hash__()+self.Name.__hash__()+self.Redirect.__hash__()+self.Tags.__hash__()+self.OutgoingReferences.__hash__()
@@ -186,6 +185,19 @@ class F3Page:
     def IsMundane(self) -> bool:
         return "Mundane" in self.Tags
 
+    @property
+    def IsWikidotRedirect(self) -> bool:
+        if self.Name == WikidotCononicizeName(self.Name):
+            s=self.Source
+            l, s=SearchAndReplace("(\s*#redirect\s*\[\[[^]]+]])", s, "", caseinsensitive=True)
+            if len(l) == 0:
+                return False
+            s=s.strip()
+            l, s=SearchAndReplace("(\[\[Category:\s*wikidot]])", s, "", caseinsensitive=True)
+            if len(l) == 0:
+                return False
+            return len(s.strip()) == 0
+        return False
 
 # ==================================================================================
 # ==================================================================================
@@ -289,8 +301,7 @@ def DigestPage(sitepath: str, pagefname: str) -> Optional[F3Page]:
     m=re.search("\|\s*[Ll]ocale=([a-zA-Z\s.,\-]+)\s*[|}]", source)
     if m is not None:
         if m.groups()[0] is not None:
-            fp.Locale=m.groups()[0]
-
+            fp.LocaleStr=m.groups()[0]
 
     # If the page was a redirect, we're done.
     if isredirect:
