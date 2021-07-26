@@ -51,11 +51,14 @@ class TagSet:
             s+=x
         return s
 
+    def __len__(self) -> int:
+        return len(self._set)
+
     def __iter__(self):
         for s in self._set:
             yield s
 
-    def add(self, val: Union[List[str], Set[str], str]):
+    def add(self, val: Union[List[str], Set[str], str]) -> None:
         # Make sure we have a set to add
         if type(val) is list:
             val=set(val)
