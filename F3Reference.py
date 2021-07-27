@@ -7,7 +7,7 @@ from HelpersPackage import WindowsFilenameToWikiPagename
 @dataclass(order=False)
 class F3Reference:
     LinkWikiName: str=""        # The name of the wiki page linked to.  For simple links it is the same as LinkDisplayText
-    LinkAnchor: str=""          # If the link is to an ahchor within a page [[link#anchor]], the value of the anchor
+    LinkAnchor: str=""          # If the link is to an anchor within a page [[link#anchor]], the value of the anchor
     LinkDisplayText: str=""     # The text displayed for the link on the wiki page.  For simple links it is the same as LinkWikiName
     ParentPageName: str=""      # If from a reference to Fancy, the name of the Fancy page it is on (else None)
     FanacURL: str=""            # If a reference to fanac.org, the URL of the page it was on (else None)
