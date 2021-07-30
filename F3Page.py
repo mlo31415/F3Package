@@ -189,18 +189,33 @@ class F3Page:
         return "Mundane" in self.Tags
 
     @property
-    def IsWikidotRedirect(self) -> bool:
-        if self.Name == WikidotCononicizeName(self.Name):
-            s=self.Source
-            l, s=SearchAndReplace("(\s*#redirect\s*\[\[[^]]+]])", s, "", caseinsensitive=True)
-            if len(l) == 0:
-                return False
-            s=s.strip()
-            l, s=SearchAndReplace("(\[\[Category:\s*wikidot]])", s, "", caseinsensitive=True)
-            if len(l) == 0:
-                return False
-            return len(s.strip()) == 0
-        return False
+    # Is this page which exists only to redirect old Wikidot-style links to pages named in Mediawiki style?
+    # E.g., is of the form Word-word-word (1st char upper case, all other lc, all special characters and spaces turn into single hyphen
+    # Note that Dog as a pagename might (or might not) be a Wikidog redirect.  There's not way to tell without resorting to semantics.
+    # TODO: Consider checking for similarity of redirect target's name to page's name
+    def IsWikidotRedirectPage(self) -> bool:
+        # The only way a page could be a redirect to a Wikidot page is if it *already* in Wikidot canonical form.
+        if self.Name != WikidotCononicizeName(self.Name):
+            return False
+
+        s=self.Source
+        # If it's not a redirect, it can't be a Wikidot redirect
+        l, s=SearchAndReplace("(\s*#redirect\s*\[\[[^]]+]])", s, "", caseinsensitive=True)
+        if len(l) == 0:
+            return False
+
+        # OK, we know it is a redirect and the name is in the Wikidot canonical form
+        # If is *is* tagged as a wikidot redirect, then it is one.
+        s=s.strip()
+        l, s=SearchAndReplace("(\[\[Category:\s*wikidot]])", s, "", caseinsensitive=True)
+        if len(l) > 0:
+            return True
+
+        # At this point we know the name is in Wikidot form, we know it is a redirect, and we know it lacks the Wikidot tag.
+        # We prefer to be conservative in marking pages as Wikidot redirects, so,
+        # If the name contains more than one hyphen, we'll call it a Wikidot redirect, otherwise not.
+        return self.Name.count("-") > 1     # (Because it's in Wikidot canonical form, we know there are no doubled hyphens ("--") in the name.)
+
 
 # ==================================================================================
 # ==================================================================================
@@ -237,31 +252,29 @@ def DigestPage(sitepath: str, pagefname: str) -> Optional[F3Page]:
     for child in root:
         if child.tag == "title":        # Must match tags set in FancyDownloader.SaveMetadata()
             fp.Name=child.text
-        if child.tag == "filename":
+        elif child.tag == "filename":
             fp.WikiFilename=child.text
-        if child.tag == "urlname":
+        elif child.tag == "urlname":
             fp.WikiUrlname=child.text
-        if child.tag == "isredirectpage":
+        elif child.tag == "isredirectpage":
             # assert(True)
             fp.Isredirectpage=child.text
-        if child.tag == "numrevisions":
+        elif child.tag == "numrevisions":
             fp.NumRevisions=child.text
-        if child.tag == "pageid":
+        elif child.tag == "pageid":
             fp.Pageid=child.text
-        if child.tag == "revid":
+        elif child.tag == "revid":
             fp.Revid=child.text
-        if child.tag == "editTime" or child.tag == "edittime":
+        elif child.tag == "editTime" or child.tag == "edittime":
             fp.Edittime=child.text
-        if child.tag == "permalink":
+        elif child.tag == "permalink":
             fp.Permalink=child.text
-
-        if child.tag == "categories":
+        elif child.tag == "categories":
             if child.text is not None and len(child.text) > 0:
                 fp.Tags.add(re.findall("Category\(\'Category:(.+?)\'\)", child.text))
-
-        if child.tag == "timestamp":
+        elif child.tag == "timestamp":
             fp.Timestamp=child.text
-        if child.tag == "user":
+        elif child.tag == "user":
             fp.User=child.text
 
     fp.WindowsFilename=pagefname
