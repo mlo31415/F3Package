@@ -10,7 +10,7 @@ import concurrent.futures
 
 from F3Reference import F3Reference
 from Log import Log
-from HelpersPackage import WikiUrlnameToWikiPagename, SearchAndReplace, WikiRedirectToPagename, SearchAndExtractBounded, WikiLinkSplit, WikidotCononicizeName
+from HelpersPackage import WikiUrlnameToWikiPagename, SearchAndReplace, WikiRedirectToPagename, SearchAndExtractBounded, WikiLinkSplit, WikidotCanonicizeName
 
 @dataclass
 class F3Table:
@@ -121,6 +121,9 @@ class F3Page:
     Tables: List[F3Table]=field(default_factory=list)
     Source: str=""
     LocaleStr: str=""
+
+    def __post_init__(self):
+        self.Rawtags._normalized=False
 
     def __hash__(self):
         return self.WikiFilename.__hash__()+self.DisplayTitle.__hash__()+self.Name.__hash__()+self.Redirect.__hash__()+self.Tags.__hash__()+self.OutgoingReferences.__hash__()
@@ -247,7 +250,6 @@ def DigestPage(sitepath: str, pagefname: str) -> Optional[F3Page]:
 
     # Now process the xml
     fp=F3Page()
-    fp.Rawtags.Normalized=False  # This really should be done as part of the F3Page creation!
     root=tree.getroot()
     for child in root:
         if child.tag == "title":        # Must match tags set in FancyDownloader.SaveMetadata()
