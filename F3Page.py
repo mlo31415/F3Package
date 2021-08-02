@@ -198,7 +198,7 @@ class F3Page:
     # TODO: Consider checking for similarity of redirect target's name to page's name
     def IsWikidotRedirectPage(self) -> bool:
         # The only way a page could be a redirect to a Wikidot page is if it *already* in Wikidot canonical form.
-        if self.Name != WikidotCononicizeName(self.Name):
+        if self.Name != WikidotCanonicizeName(self.Name):
             return False
 
         s=self.Source
