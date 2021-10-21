@@ -1,7 +1,7 @@
 # A file to define a class to extract and hold the characteristics of a Fancy 3 page
 from __future__ import annotations
 from dataclasses import dataclass, field
-from typing import Optional, List, Union, Set
+from typing import Optional, Union
 
 import os
 import xml.etree.ElementTree as ET
@@ -14,8 +14,8 @@ from HelpersPackage import WikiUrlnameToWikiPagename, SearchAndReplace, WikiRedi
 
 @dataclass
 class F3Table:
-    Headers: List[str]=field(default_factory=list)
-    Rows: List[List[str]]=field(default_factory=list)
+    Headers: list[str]=field(default_factory=list)
+    Rows: list[list[str]]=field(default_factory=list)
     Type: str=""              # A string corresponding to one of the F3 page categories
 
     #...........................
@@ -23,7 +23,7 @@ class F3Table:
         return len(self.Rows)
 
     #...........................
-    def __getitem__(self, i: int) -> Optional[List[str]]:
+    def __getitem__(self, i: int) -> Optional[list[str]]:
         if len(self.Rows) <= i:
             return None
         return self.Rows[i]
@@ -58,7 +58,7 @@ class TagSet:
         for s in self._set:
             yield s
 
-    def add(self, val: Union[List[str], Set[str], str]) -> None:
+    def add(self, val: Union[list[str], set[str], str]) -> None:
         # Make sure we have a set to add
         if type(val) is list:
             val=set(val)
@@ -100,6 +100,8 @@ class TagSet:
 
 
 ###################################################################################################
+
+
 @dataclass(order=False)
 class F3Page:
     WikiFilename: str=""                      # The page's Mediawiki "file" name, e.g., Now_Is_the_Time
@@ -108,7 +110,7 @@ class F3Page:
     Redirect: str=""                         # If this is a redirect page, the Wikiname name of the page to which it redirects
     Tags: TagSet=field(default_factory=TagSet)                                 # A list of tags associated with this page. The case has been normalized
     Rawtags: TagSet=field(default_factory=TagSet)              # A list of tags with case unnormalized (as it actually is on the page)
-    OutgoingReferences: List[F3Reference]=field(default_factory=list)  # A list of all the references on this page
+    OutgoingReferences: list[F3Reference]=field(default_factory=list)  # A list of all the references on this page
     WikiUrlname: str=""
     NumRevisions: int=0
     Pageid: int=0
@@ -118,7 +120,7 @@ class F3Page:
     Timestamp: str=""
     User: str=""
     WindowsFilename: str=""
-    Tables: List[F3Table]=field(default_factory=list)
+    Tables: list[F3Table]=field(default_factory=list)
     Source: str=""
     LocaleStr: str=""
 
