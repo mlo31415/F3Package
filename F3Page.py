@@ -299,7 +299,7 @@ def DigestPage(sitepath: str, pagefname: str) -> Optional[F3Page]:
     # Is this a redirect page?
     # (We check this before looking at the Categories because the page could be a redirect *to* a category!)
     isredirect=False
-    found, source=SearchAndReplace("^#redirect\s*\[\[(.+?)\]\]", source, "", caseinsensitive=True)        # Ugly way to handle UC/lc, but it needs to be in the pattern
+    found, source=SearchAndReplace("^#redirect\s*\[\[(.+?)\]\]", source, "", caseinsensitive=True)
     if len(found) == 1: # If we found a redirect, then there's no point in looking for links, also, so we're done.
         fp.Redirect=WikiRedirectToPagename(found[0])
         isredirect=True
