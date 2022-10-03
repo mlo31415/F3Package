@@ -145,53 +145,86 @@ class F3Page:
             return False
         return True
 
+    # Check for the presence of a single tag or a list of tags
+    def HasTag(self, tags: str|[str]) -> bool:
+        if type(tags) is str:
+            tags=[tags]
+
+        for tag1 in tags:
+            for tag2 in self.Tags:
+                if tag1.lower() == tag2.lower():
+                    return True
+        return False
+
+
     @property
     def IsPerson(self) -> bool:
-        return ("Fan" in self.Tags or "Pro" in self.Tags) and ("Person" in self.Tags or "Publisher" not in self.Tags)    # "Publisher" is an organization, but if the page is marked Person, let it be
+        return self.HasTag(["Fan", "Pro"]) and (self.HasTag("Person") or not self.HasTag("Publisher"))    # "Publisher" is an organization, but if the page is marked Person, let it be
 
     @property
     def IsFan(self) -> bool:
-        return "Fan" in self.Tags
+        return self.HasTag("Fan")
 
     @property
     def IsFanzine(self) -> bool:
-        return "Fanzine" in self.Tags or "Newszine" in self.Tags or "Apazine" in self.Tags or "Clubzine" in self.Tags or "Fanthology" in self.Tags  # When the database is cleaner we'll only need to check Fanzine
+        return self.HasTag(["Fanzine", "Newszine", "Apazine", "Clubzine", "Fanthology"])  # When the database is cleaner we'll only need to check Fanzine
 
     @property
     def IsAPA(self) -> bool:
-        return "APA" in self.Tags
+        return self.HasTag("APA")
+
+    @property
+    def IsStore(self) -> bool:
+        return self.HasTag("Store")
 
     @property
     def IsClub(self) -> bool:
-        return "Club" in self.Tags
+        return self.HasTag("Club")
+
+    @property
+    def IsConrunning(self) -> bool:
+        return self.HasTag("Conrunning")
 
     @property
     def IsConInstance(self) -> bool:
-        return "Convention" in self.Tags and "Inseries" in self.Tags
+        return self.HasTag("Convention") and self.HasTag("Inseries")
 
     @property
     def IsConSeries(self) -> bool:
-        return "Convention" in self.Tags and "Conseries" in self.Tags
+        return self.HasTag("Convention") and self.HasTag("Conseries")
+
+    @property
+    def IsCatchphrase(self) -> bool:
+        return self.HasTag("Catchphrase")
+
+    @property
+    def IsFiction(self) -> bool:
+        return self.HasTag("Fiction")
+
+    @property
+    def IsPublisher(self) -> bool:
+        return self.HasTag("Publisher")
+
+    @property
+    def IsNickname(self) -> bool:
+        return self.HasTag("Nickname")
+
+    @property
+    def IsLocale(self) -> bool:
+        return self.HasTag("Locale")
+
+    @property
+    def IsMundane(self) -> bool:
+        return self.HasTag("Mundane")
+
+    @property
+    def IsWikidot(self) -> bool:
+        return self.HasTag("Wikidot")
+
 
     @property
     def IsRedirectpage(self) -> bool:
         return self.Redirect != ""
-
-    @property
-    def IsPublisher(self) -> bool:
-        return "Publisher" in self.Tags
-
-    @property
-    def IsNickname(self) -> bool:
-        return "Nickname" in self.Tags
-
-    @property
-    def IsLocale(self) -> bool:
-        return "Locale" in self.Tags
-
-    @property
-    def IsMundane(self) -> bool:
-        return "Mundane" in self.Tags
 
     @property
     # Is this page which exists only to redirect old Wikidot-style links to pages named in Mediawiki style?
@@ -300,7 +333,7 @@ def DigestPage(sitepath: str, pagefname: str) -> Optional[F3Page]:
     # (We check this before looking at the Categories because the page could be a redirect *to* a category!)
     isredirect=False
     found, source=SearchAndReplace("^#redirect\s*\[\[(.+?)\]\]", source, "", caseinsensitive=True)
-    if len(found) == 1: # If we found a redirect, then there's no point in looking for links, also, so we're done.
+    if len(found) > 0:  # Really, it should never be other than 1 or 0...
         fp.Redirect=WikiRedirectToPagename(found[0])
         isredirect=True
 
