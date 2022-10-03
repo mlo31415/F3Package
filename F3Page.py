@@ -198,6 +198,10 @@ class F3Page:
         return self.HasTag("Catchphrase")
 
     @property
+    def IsBook(self) -> bool:
+        return self.HasTag("Book")
+
+    @property
     def IsFiction(self) -> bool:
         return self.HasTag("Fiction")
 
