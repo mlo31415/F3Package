@@ -272,7 +272,12 @@ def DigestPage(sitepath: str, pagefname: str) -> Optional[F3Page]:
             Log("DigestPage: Couldn't find '"+pagePathXml+"'")
             return None
         # Read the xml file
-        return ET.parse(pagePathXml)
+        try:
+            return ET.parse(pagePathXml)
+        except ET.ParseError:
+            Log(f"ParseError while reading {pagePathXml}")
+            return None
+
     def LoadSource(pagePathTxt: str) -> Optional[str]:
         if not os.path.isfile(pagePathTxt):
             Log("DigestPage: Couldn't find '"+pagePathTxt+"'")
@@ -280,6 +285,8 @@ def DigestPage(sitepath: str, pagefname: str) -> Optional[F3Page]:
         # Open and read the page's source
         with open(os.path.join(pagePathTxt), "rb") as f:   # Reading in binary and doing the funny decode is to handle special characters embedded in some sources.
             return f.read().decode("utf8") # decode("cp437") is magic to handle funny foreign characters
+
+    # Concurrently load the source and xml
     with concurrent.futures.ThreadPoolExecutor() as executor:
         tree=executor.submit(LoadXML, os.path.join(sitepath, pagefname)+".xml").result()
         source=executor.submit(LoadSource, os.path.join(sitepath, pagefname)+".txt").result()
